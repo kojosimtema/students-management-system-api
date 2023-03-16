@@ -5,6 +5,7 @@ from werkzeug.security import generate_password_hash
 from .main.models.course import Course
 from .main.models.student import Student
 from .main.models.user import User
+from .main.models.enrollment import Enrollement
 from .main.config.config import config_dict
 from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager
@@ -27,8 +28,6 @@ def create_app(config=config_dict['dev']):
 
     @app.before_first_request
     def create_admin():
-        db.create_all()
-        
         user = User.query.filter_by(username='superadmin').first()
 
         if user:
@@ -57,7 +56,8 @@ def create_app(config=config_dict['dev']):
             'db': db,
             'Student': Student,
             'Course': Course,
-            'User': User
+            'User': User,
+            'Enrollment': Enrollement
         }
 
     return app
