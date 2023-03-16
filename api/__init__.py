@@ -27,6 +27,8 @@ def create_app(config=config_dict['dev']):
 
     @app.before_first_request
     def create_admin():
+        db.create_all()
+        
         user = User.query.filter_by(username='superadmin').first()
 
         if user:
