@@ -228,7 +228,7 @@ class resetPassword(MethodView):
             }, 200
         
         else:
-                return {
+            return {
                 'message': 'Email not found'
             }, 404
         
@@ -244,37 +244,52 @@ class changePassword(MethodView):
         Change password
         """
         user_id = get_jwt_identity()
-        
+        response = {'message': 'Password successfuly changed'}
+
         if isinstance(user_id, int):
             user = User.query.filter_by(id=user_id).first()
+
+            if user and user.username == 'superadmin':
+                return {
+                    'message': 'For testing purposes, you are not allowed to change the super admin password'
+                }
+            
+            elif user and check_password_hash(user.password, data['old_password']):
+                user.password = generate_password_hash(data['new_password'])
+                db.session.commit()
+
+                return response, 200
+            
+            else:
+                return {
+                    'message': 'Your old password is incorrect'
+                } 
+            
 
         if isinstance(user_id, str):
             student = Student.query.filter_by(student_id=user_id).first()
 
-        response = {'message': 'Password successfuly changed'}
+            if student and check_password_hash(student.password, data['old_password']):
+                student.password = generate_password_hash(data['new_password'])    
+                db.session.commit()
 
-
-        if user and user.username == 'superadmin':
-            return {
-                'message': 'For testing purposes, you are not allowed to change the super admin password'
-            }
+                return response, 200
+            else:
+                return {
+                    'message': 'Your old password is incorrect'
+                }
             
-        if student and check_password_hash(student.password, data['old_password']):
-            student.password = generate_password_hash(data['new_password'])    
-            db.session.commit()
-
-            return response, 200      
             
-        elif user and check_password_hash(user.password, data['old_password']):
-            user.password = generate_password_hash(data['new_password'])
-            db.session.commit()
+        
 
-            return response, 200 
+
+        
+            
+             
+            
+        
          
-        else:
-            return {
-                'message': 'Your old password is incorrect'
-            }
+        
 
  
 
