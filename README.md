@@ -24,7 +24,7 @@ The application can be used for the following:
 - Once logged in, a student can view all available courses to enroll for, he or she can view all the course enrolled under as well as the grades for each course
 - Students can also view thier basic details or information, request for a password change if forgotten, and also be able to change thier passwords.
 - All other routes except enrolling for a course can be accessed by an Administrator.
-- However, a user who is not an administrator has some restrictions like updating and deleting a student or course.
+- However, a user who is not an administrator has some restrictions like deleting a student or course.
 - This application also enables the user to retrieve all students and all courses. One can also view a student by his or her ID and also view a course by its code
 - You can also view all the students enrolled for a particular course as well as all the courses a particular student has enrolled for
 - All the grades of each student for a particular course can also be retrieved. A student can also retrieve all the grades for all the courses they have enrolled for
@@ -81,7 +81,7 @@ app = create_app()
 if __name__ == '__main__':
     app.run()
 ```
-**2. Navigate to api/main/config and comment line 7 to 9 in the config.py file**
+**2. Navigate to api/main/config and comment line 7 to 9, line 64 to 67 and uncomment line 68 in the config.py file**
 ```
 import os
 from decouple import config
@@ -101,7 +101,7 @@ from datetime import timedelta
 
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
-#uri = os.getenv('DATABASE_URL') #or other relevant config var
+#uri = config('DATABASE_URL') #or other relevant config var
 #if uri.startswith('postgres://'):
 #    uri = uri.replace('postgres://', 'postgresql://', 1)
 
@@ -155,8 +155,13 @@ GET|/student/enrollment/grade/{student_id}|Retrieve or get grades of all courses
 GET|/student/enrollment/gpa|Retrieve or get the GPA of all students|GPA|None|Adminstrator, User
 GET|/student/enrollment/gpa/{student_id}|Retrive or get the GPA of a particular student|GPA|Student ID|Adminstrator, User, Student
 GET|/student/{student_id}|Retrive or get a student by ID|Student|Student ID|Adminstrator, User, Student
-PUT|/student/{student_id}|Update a student's information|Student|Student ID|Adminstrator
+PUT|/student/{student_id}|Update a student's information|Student|Student ID|Adminstrator, User
 DELETE|/student/{student_id}|Delete a student from the database|Success Message|Student ID|Adminstrator
+GET|/course|Retrieve or get all courses|Courses|None|Adminstrator, User, Student
+POST|/course|Add a new course|Course|None|Adminstrator, User
+GET|/course/{course_code}|Retrieve or get a course by course code|Course|Course code|Adminstrator, User
+PUT|/course/{course_code}|Update or edit a course|Course|Course code|Adminstrator, User
+DELETE|/course/{course_code}|Delete a course from database|Success message|Course_code|Adminstrator
 
 
 ___
