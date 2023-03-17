@@ -1,10 +1,18 @@
-README FOR student-management-api
+## Table of Contents
+ - [About](#about)
+ - [Features](#features)
+ - [Installation and Usage](#installation-and-usage)
+    - [How to run the app locally (Installation)](#how-to-run-the-app-locally)
+    - [Usage](#usage)
+ - [Endpoints](#endpoints)
+ - [Languages and Tools Used](#languages-and-tools-used)
+
 
 ## About
-This is a student management REST-API which was built using python Flask and Flask-smorest.
+This is a student management REST-API which was built using python Flask and Flask-smorest that enables users to add students,courses and grade the students as well.
 The application can be used for the following:
 
-##Features
+## Features
 - Register students into the school's system
 - Create new users to manage the application
 - Administrators and users can add or register students. Student ID and password will be automatically generated once they are registered
@@ -20,36 +28,96 @@ The application can be used for the following:
 - This application also enables the user to retrieve all students and all courses. One can also view a student by his or her ID and also view a course by its code
 - You can also view all the students enrolled for a particular course as well as all the courses a particular student has enrolled for
 - All the grades of each student for a particular course can also be retrieved. A student can also retrieve all the grades for all the courses they have enrolled for
-- Students can view thier GPA and users and administrators can view the GPA of all students
+- Students can view thier GPA. However, users and administrators can view the GPA of all students
 
-#Usage
-You try this application, you can either clone and run it locally on your PC or visit (this-site) to check it out.
-Follow the steps below to run and test the application locally
+## Installation and Usage
+- To try this application, you can either clone and run it locally on your PC or visit the site [here](https://students-management-system-api.herokuapp.com/) to check it out.
 
-##How to run the app locally
+- Follow the steps below to run and test the application locally
+
+## How to run the app locally
 1. Clone this app
 ```
-git clone ..........................
+git clone https://github.com/kojosimtema/students-management-system-api.git
 ``` 
-2. CD to the root directorate of the project and install create your virtual environment
+2. cd to the root directorate of the project and create your virtual environment
 ```
 cd student-management-api
-``` 
-```
+
 python -m venv env_name
 ``` 
 3. Activate your virtual environment
 ```
-source env_name/Scripts/activate #for windows
+source env_name/Scripts/activate "for windows"
 ``` 
 ```
-source env_name/bin/activate #for linus and MacOS
+source env_name/bin/activate "for linus and MacOS"
 ``` 
 4. Install all packages from the requirements.txt file
 ```
-source env_name/Scripts/activate #for windows
+pip install -r requirements.txt
 ``` 
-5. Run the application to get started
+
+
+## Usage
+**Before you run the application, do the following:**
+
+**1. In the run.py file remove the *"config=config_dict['prod']"* argument from the create_app function as below to run in development mode**
+```
+from api import create_app
+from api.main.config.config import config_dict
+
+app = create_app(config=config_dict['prod'])
+
+if __name__ == '__main__':
+    app.run()
+```
+```
+from api import create_app
+from api.main.config.config import config_dict
+
+app = create_app()
+
+if __name__ == '__main__':
+    app.run()
+```
+**2. Navigate to api/main/config and comment line 7 to 9 in the config.py file**
+```
+import os
+from decouple import config
+from datetime import timedelta
+
+BASE_DIR = os.path.dirname(os.path.realpath(__file__))
+
+uri = os.getenv('DATABASE_URL') #or other relevant config var
+if uri.startswith('postgres://'):
+    uri = uri.replace('postgres://', 'postgresql://', 1)
+
+```
+```
+import os
+from decouple import config
+from datetime import timedelta
+
+BASE_DIR = os.path.dirname(os.path.realpath(__file__))
+
+#uri = os.getenv('DATABASE_URL') #or other relevant config var
+#if uri.startswith('postgres://'):
+#    uri = uri.replace('postgres://', 'postgresql://', 1)
+
+```
+**3. Create the database using flask shell as follows;**
+- Set the flask app
+
+```
+export FLASK_APP=api/
+```
+```
+flask shell
+
+db.create_all()
+```
+**4. Run the application to get started**
 ```
 flask run
 ``` 
@@ -58,27 +126,54 @@ or
 python run.py
 ``` 
 
-# Once the application is running, you can start testing it with the following admin credentials
-- username: superadmin
-- password: password
+Once the application is running, you can start testing it with the following admin credentials
+- **username: superadmin**
+- **password: password**
 
 - Login as an admin to get a JWT token. Once you add the token to authorization header to can go ahead and create a new user or student.
 - You can also view students already added in the system. All other routes can b tested once you are logged in as an admin
 - If you need to perform as task as a student (eg. enroll for a course) you'll need to login as a student to do that.
-- You can go ahead and create a new student to get the student ID and password. You may also use an already registered student details for testing
-- student_id: ATS00002
-- password: AGOulsYB
+- You can go ahead and create a new student to get the student ID and password.
 
-You can visit (this-site) as well to test the already hosted application with the same credentials provided above.
+You can visit the app [here](https://students-management-system-api.herokuapp.com/) as well to test the already hosted application with the same credentials provided above.
 
-#ENDPOINTS
+## ENDPOINTS
+HTTP METHOD|ENDPOINT|ACTION|RETURN VALUE|PARAMETER|AUTHORIZATION
+---|---|---|---|---|---
+POST|/auth/user/signup|Create a new User|User|None|Administrator
+POST|/auth/user/login|Generate Access Token for User|Access Token & Refresh Token|None|Administrator, User
+POST|/auth/student/register|Register a new student|Student ID & password|None|Administrator, User
+POST|/auth/student/login|Generate a Access token for student|Access Token & Refresh Token|None|Student
+POST|/auth/resetpassword/{email}|Reset a forgotten password|Username and new password; Student ID and new password|User email or Student email|User, Student
+PUT|/auth/changepassword|Change a password|Success message|None|User, Student
+GET|/student|Retrieve or get all students|Students|None|Adminstrator, User
+POST|/student/enrollment|Enroll for a course|Student with courses enrolled for|None|Student
+GET|/student/enrollment/{student_id}|Retrieve or get all courses of a particular student|Course|Student email|Adminstrator, User, Student
+PUT|/student/enrollment/{student_id}/{course_code}|Enter or update a student's score for a course|Enrollment|Student ID and course code|Adminstrator, User
+DELETE|/student/enrollment/{student_id}/{course_code}|Delete or unregister course enrollment for a student|Success Message|Student ID and course code|Adminstrator
+GET|/student/enrollment/grade/{student_id}|Retrieve or get grades of all courses for a particular student|Enrollment|Student ID|Adminstrator, User, Student
+GET|/student/enrollment/gpa|Retrieve or get the GPA of all students|GPA|None|Adminstrator, User
+GET|/student/enrollment/gpa/{student_id}|Retrive or get the GPA of a particular student|GPA|Student ID|Adminstrator, User, Student
+GET|/student/{student_id}|Retrive or get a student by ID|Student|Student ID|Adminstrator, User, Student
+PUT|/student/{student_id}|Update a student's information|Student|Student ID|Adminstrator
+DELETE|/student/{student_id}|Delete a student from the database|Success Message|Student ID|Adminstrator
 
+
+___
+> **NOTE:** I am returning the student ID and password for testing purposes. Ideally, the student ID and password will be sent directly to the student's email
 
 
 ## Languages and Tools Used
+<img align="center" src="https://user-images.githubusercontent.com/53656050/192115605-aebc5f03-6e81-4537-985a-6bdd7c95f83a.png" style="width:70px; height:70px" alt="python" /> <img align="center" src="https://user-images.githubusercontent.com/53656050/192115449-02c26cf0-a2aa-4b45-a5ef-0243ac26f200.png" style="width:70px; height:70px" alt="flask" /> <img align="center" src="https://user-images.githubusercontent.com/53656050/225774036-d7db456d-49be-4b72-9dbb-97f36f005a2a.png" style="width:70px; height:70px" alt="sqlite" /><img align="center" src="https://user-images.githubusercontent.com/53656050/225773399-08e79528-2c33-4a52-962b-7bb54d0bea03.png" style="width:70px; height:70px" alt="postgresql" />
+
 - Python
 - Flask
 - SQLAlchemy
 - SQLite
 - Flask Smoorest
+- PostgreSQL
 
+## Acknowledgement
+I wish to acknowledge [AltSchool Africa](https://altschoolafrica.com/schools/engineering) for thier innovation and investments in training us.
+
+I also wish to acknowledge [Caleb](https://github.com/CalebEmelike) for being an exceptional tutor
