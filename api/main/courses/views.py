@@ -41,35 +41,39 @@ class getCreateCourse(MethodView):
         Add a new course
         """
         user_id = get_jwt_identity()
-        user = User.query.filter_by(id=user_id).first()
 
-        course_name = course_data['name']
-        course_code = course_data['course_code']
+        if isinstance(user_id, int):
+            user = User.query.filter_by(id=user_id).first()
 
-        if len(course_code) > 7:
-            abort(500, message='Your course code should not be more than seven (7) characters')
+            course_name = course_data['name']
+            course_code = course_data['course_code']
 
-        if user and user.is_admin == True:
-            new_course = Course(
-                course_code = course_data['course_code'].upper(),
-                name = course_data['name'],
-                teacher = course_data['teacher']
-                )
+            if len(course_code) > 7:
+                abort(500, message='Your course code should not be more than seven (7) characters')
+
+            if user and user.is_admin == True:
+                new_course = Course(
+                    course_code = course_data['course_code'].upper(),
+                    name = course_data['name'],
+                    teacher = course_data['teacher']
+                    )
+                
+                try:
+                    new_course.save()
+                
+                except IntegrityError:
+                    abort(HTTPStatus.BAD_REQUEST, message= f'A course with name {course_name} or code {course_code.upper()} already exit')
+
+                except SQLAlchemyError:
+                    abort(HTTPStatus.INTERNAL_SERVER_ERROR, message= 'An error occured whiles adding new course')
+
+                return new_course, HTTPStatus.CREATED
             
-            try:
-                new_course.save()
-            
-            except IntegrityError:
-                abort(HTTPStatus.BAD_REQUEST, message= f'A course with name {course_name} or code {course_code.upper()} already exit')
-
-            except SQLAlchemyError:
-                abort(HTTPStatus.INTERNAL_SERVER_ERROR, message= 'An error occured whiles adding new course')
-
-            return new_course, HTTPStatus.CREATED
-        
+            else:
+                abort(401, message='Only administrators can add a course. Login as admin to perform this action')
         else:
             abort(401, message='Only administrators can add a course. Login as admin to perform this action')
-    
+        
 
 @blp.route('/course/<string:course_code>')
 class getCourseByCode(MethodView):
@@ -92,17 +96,21 @@ class getCourseByCode(MethodView):
         Get a course by course code
         """
         user_id = get_jwt_identity()
-        user = User.query.filter_by(id=user_id).first()
 
-        if user:
-            course = Course.query.filter_by(course_code=course_code.upper()).first()
-            
-            if course:
-                return course, HTTPStatus.OK
-            
-            abort(404, message='Course not found')
+        if isinstance(user_id, int):
+            user = User.query.filter_by(id=user_id).first()
 
-        abort(401, message='only admins and users can perform this function. Login as admin or user')
+            if user:
+                course = Course.query.filter_by(course_code=course_code.upper()).first()
+                
+                if course:
+                    return course, HTTPStatus.OK
+                else:
+                    abort(404, message='Course not found')
+            else:
+                abort(401, message='only admins and users can perform this function. Login as admin or user')
+        else:
+            abort(401, message='only admins and users can perform this function. Login as admin or user')
 
     
     @jwt_required()
@@ -124,32 +132,36 @@ class getCourseByCode(MethodView):
         Update or Edit a Course
         """
         user_id = get_jwt_identity()
-        user = User.query.filter_by(id=user_id).first()
 
-        if user and user.is_admin == True:
-            course_update = Course.query.filter_by(course_code=course_code.upper()).first()
-            if course_update:
-                course_name = data['name']
-                code = data['course_code'].upper()
-                enrollments = Enrollement.query.filter_by(course_code=course_code.upper()).all()
-                try:
-                    course_update.name = data['name']
-                    course_update.teacher = data['teacher']
-                    course_update.course_code = data['course_code'].upper()
-                    if enrollments:
-                        for enrollment in enrollments:
-                            enrollment.course_code = code
+        if isinstance(user_id, int):
+            user = User.query.filter_by(id=user_id).first()
 
-                    db.session.commit()
-                except IntegrityError:
-                    abort(HTTPStatus.BAD_REQUEST, message= f'A course with name {course_name} or code {code} already exit')
+            if user and user.is_admin == True:
+                course_update = Course.query.filter_by(course_code=course_code.upper()).first()
+                if course_update:
+                    course_name = data['name']
+                    code = data['course_code'].upper()
+                    enrollments = Enrollement.query.filter_by(course_code=course_code.upper()).all()
+                    try:
+                        course_update.name = data['name']
+                        course_update.teacher = data['teacher']
+                        course_update.course_code = data['course_code'].upper()
+                        if enrollments:
+                            for enrollment in enrollments:
+                                enrollment.course_code = code
 
-                except SQLAlchemyError:
-                    abort(HTTPStatus.INTERNAL_SERVER_ERROR, message= 'An error occured whiles adding new course')
+                        db.session.commit()
+                    except IntegrityError:
+                        abort(HTTPStatus.BAD_REQUEST, message= f'A course with name {course_name} or code {code} already exit')
 
-                return course_update, HTTPStatus.OK
+                    except SQLAlchemyError:
+                        abort(HTTPStatus.INTERNAL_SERVER_ERROR, message= 'An error occured whiles adding new course')
+
+                    return course_update, HTTPStatus.OK
+                else:
+                    abort(404, message="Course not found")
             else:
-                abort(404, message="Course not found")
+                abort(401, message='Only administrators can update a course. Login as admin to perform this action')
         else:
             abort(401, message='Only administrators can update a course. Login as admin to perform this action')
 
@@ -171,27 +183,31 @@ class getCourseByCode(MethodView):
             Delete a course
             """
             user_id = get_jwt_identity()
-            user = User.query.filter_by(id=user_id).first()
 
-            course = Course.query.filter_by(course_code=course_code.upper()).first()
-            
-            if user and user.is_admin == True:
-                if course:
-                    try:
-                        db.session.delete(course)
-                        db.session.commit()
+            if isinstance(user_id, int):
+                user = User.query.filter_by(id=user_id).first()
 
-                        return {
-                            'message': 'Course successfully deleted'
-                        }, 200
-                        
-                    except SQLAlchemyError:
-                        abort(500, message='There are students already enrolled to this course')
+                course = Course.query.filter_by(course_code=course_code.upper()).first()
+                
+                if user and user.is_admin == True:
+                    if course:
+                        try:
+                            db.session.delete(course)
+                            db.session.commit()
 
+                            return {
+                                'message': 'Course successfully deleted'
+                            }, 200
+                            
+                        except SQLAlchemyError:
+                            abort(500, message='There are students already enrolled to this course')
+
+                    else:
+                        abort(404, message='Course not found')
                 else:
-                    abort(404, message='Course not found')
-            
-            abort(401, message='Only administrators can delete a course. Login as admin to perform this action')
+                    abort(401, message='Only administrators can delete a course. Login as admin to perform this action')
+            else:
+                abort(401, message='Only administrators can delete a course. Login as admin to perform this action')
 
 
 
@@ -216,20 +232,24 @@ class enrolledStudents(MethodView):
        Get all Students Registered in a particular course
        """
        user_id = get_jwt_identity()
-       user = User.query.filter_by(id=user_id).first()
-       
-       course = Course.query.filter_by(course_code=course_code.upper()).first()           
-       
-       if user:
-           if course:
-                students = course.students
-                
-                return students, HTTPStatus.OK
-           else:
-               abort(404, message='Course not found')
-       else:
-            abort(401, message='Only administrators and users can perform this action. Login as admin or user to have access')
+
+       if isinstance(user_id, int):
+            user = User.query.filter_by(id=user_id).first()
             
+            course = Course.query.filter_by(course_code=course_code.upper()).first()           
+            
+            if user:
+                if course:
+                        students = course.students
+                        
+                        return students, HTTPStatus.OK
+                else:
+                    abort(404, message='Course not found')
+            else:
+               abort(401, message='Only administrators and users can perform this action. Login as admin or user to have access')
+       else:
+           abort(401, message='Only administrators and users can perform this action. Login as admin or user to have access')
+             
 
 @blp.route('/course/enrollment/grade/<string:course_code>')
 class getStudentCourseGrades(MethodView):
@@ -252,12 +272,16 @@ class getStudentCourseGrades(MethodView):
         Get grades of all students for a particular course
         """
         user_id = get_jwt_identity()
-        user = User.query.filter_by(id=user_id)
 
-        if user:
-            enrollment = Enrollement.query.filter_by(course_code=course_code.upper()).all()
+        if isinstance(user_id, int):
+            user = User.query.filter_by(id=user_id)
 
-            return enrollment, 200
+            if user:
+                enrollment = Enrollement.query.filter_by(course_code=course_code.upper()).all()
+
+                return enrollment, 200
+            else:
+                abort(401, message='Only administrators and users can perform this action. Login as admin or user to have access')
         else:
             abort(401, message='Only administrators and users can perform this action. Login as admin or user to have access')
         

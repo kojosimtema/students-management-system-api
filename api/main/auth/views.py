@@ -25,31 +25,35 @@ class createUser(MethodView):
         Create or add a new user
         """
         user_id = get_jwt_identity()
-        user = User.query.filter_by(id=user_id).first()
+        
+        if isinstance(user_id, int):
+            user = User.query.filter_by(id=user_id).first()
 
-        if user and user.is_admin == True:
-            email = user_data['email']
-            username = user_data['username']
+            if user and user.is_admin == True:
+                email = user_data['email']
+                username = user_data['username']
 
-            new_user = User(
-                fullname = user_data['fullname'],
-                username = username,
-                email = email,
-                password = generate_password_hash(user_data['password']),
-                is_admin = user_data['is_admin']
-            )
+                new_user = User(
+                    fullname = user_data['fullname'],
+                    username = username,
+                    email = email,
+                    password = generate_password_hash(user_data['password']),
+                    is_admin = user_data['is_admin']
+                )
 
-            try:
-                db.session.add(new_user)
-                db.session.commit()
-            
-            except IntegrityError:
-                abort(400, message= f'A user with the email {email} or username {username} already exit')
-            
-            except SQLAlchemyError:
-                abort(500, message = 'An error occured whiles adding user')
+                try:
+                    db.session.add(new_user)
+                    db.session.commit()
+                
+                except IntegrityError:
+                    abort(400, message= f'A user with the email {email} or username {username} already exit')
+                
+                except SQLAlchemyError:
+                    abort(500, message = 'An error occured whiles adding user')
 
-            return new_user, 201
+                return new_user, 201
+            else:
+                abort(401, message='Only administrators can add a user. Login as admin to add user')
         else:
             abort(401, message='Only administrators can add a user. Login as admin to add user')
 
@@ -93,43 +97,47 @@ class createStudent(MethodView):
         Register a new student
         """
         user_id = get_jwt_identity()
-        user = User.query.filter_by(id=user_id).first()
 
-        if user:
-            email = student_data['email']
+        if isinstance(user_id, int):
+            user = User.query.filter_by(id=user_id).first()
 
-            #Generate a random password for student
-            characters = string.ascii_letters + string.digits
-            password = ''.join((random.choice(characters) for i in range(8)))
+            if user:
+                email = student_data['email']
 
-            new_student = Student(
-                firstname = student_data['firstname'],
-                lastname = student_data['lastname'],
-                email = email,
-                password = generate_password_hash(password)
-            )
+                #Generate a random password for student
+                characters = string.ascii_letters + string.digits
+                password = ''.join((random.choice(characters) for i in range(8)))
 
-            try:
-                db.session.add(new_student)
-                db.session.commit()
+                new_student = Student(
+                    firstname = student_data['firstname'],
+                    lastname = student_data['lastname'],
+                    email = email,
+                    password = generate_password_hash(password)
+                )
 
-                #Generate a student ID for student
-                student_id = 'ATS'+ str(0)*(5-(len(str(new_student.id)))) + str(new_student.id)
-                new_student.student_id = student_id
+                try:
+                    db.session.add(new_student)
+                    db.session.commit()
+
+                    #Generate a student ID for student
+                    student_id = 'ATS'+ str(0)*(5-(len(str(new_student.id)))) + str(new_student.id)
+                    new_student.student_id = student_id
+                    
+                    db.session.commit()
                 
-                db.session.commit()
-            
-            except IntegrityError:
-                abort(400, message= f'A student with the email {email} already exit')
-            
-            except SQLAlchemyError:
-                abort(500, message = 'An error occured whiles adding student')
+                except IntegrityError:
+                    abort(400, message= f'A student with the email {email} already exit')
+                
+                except SQLAlchemyError:
+                    abort(500, message = 'An error occured whiles adding student')
 
-            return {
-                'message': 'New student successfully created. Use the credentials below to login as a student',
-                'student_id': student_id,
-                'password': password
-            }, 201
+                return {
+                    'message': 'New student successfully created. Use the credentials below to login as a student',
+                    'student_id': student_id,
+                    'password': password
+                }, 201
+            else:
+                abort(401, message='Only administrators and users can add a student. Login as admin or user to add student')
         else:
             abort(401, message='Only administrators and users can add a student. Login as admin or user to add student')
 

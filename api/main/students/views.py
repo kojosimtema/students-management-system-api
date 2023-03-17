@@ -26,14 +26,18 @@ class getStudents(MethodView):
         Get all students
         """
         user_id = get_jwt_identity()
-        user = User.query.filter_by(id=user_id).first()
 
-        if user:
-            return Student.query.all()
+        if isinstance(user_id, int):
+            user = User.query.filter_by(id=user_id).first()
+
+            if user:
+                return Student.query.all()
+            else:
+                abort(HTTPStatus.UNAUTHORIZED, message='Only administrators and users can view all students info. Login as admin or user to have access')
         else:
             abort(HTTPStatus.UNAUTHORIZED, message='Only administrators and users can view all students info. Login as admin or user to have access')
     
-    
+
 @blp.route('/student/enrollment')
 class courseEnrollment(MethodView):
 
@@ -94,18 +98,22 @@ class getAllStudentCourse(MethodView):
        Get all courses of a particular student
        """
        user_id = get_jwt_identity()
-       user = User.query.filter_by(id=user_id).first()
        
-       if user or student_id.upper() == user_id:
-           student = Student.query.filter_by(student_id=student_id.upper()).first()
-           if student:
-                course = student.courses
-                return course, HTTPStatus.OK
-           else:
-                abort(404, message="Student not found")
+       if isinstance(user_id, int):
+            user = User.query.filter_by(id=user_id).first()
+            
+            if user or student_id.upper() == user_id:
+                student = Student.query.filter_by(student_id=student_id.upper()).first()
+                if student:
+                    course = student.courses
+                    return course, HTTPStatus.OK
+                else:
+                    abort(404, message="Student not found")
+            else:
+                abort(401, message='You cannot view course of other students. Login as admin or user to view other student course')
        else:
            abort(401, message='You cannot view course of other students. Login as admin or user to view other student course') 
-           
+    
 
 @blp.route('/student/enrollment/<string:student_id>/<string:course_code>')
 class updateDeleteStudentCourse(MethodView):
@@ -135,29 +143,33 @@ class updateDeleteStudentCourse(MethodView):
        Enter or update a student's score for a course
        """
        user_id = get_jwt_identity()
-       user = User.query.filter_by(id=user_id).first()
-   
-       enrollment = Enrollement.query.filter_by(student_id=student_id.upper(), course_code=course_code.upper()).first()
-       
-       score = data['score']
 
-       if 0 > score > 100:
-           abort(401, message = 'The score can only be from 0 to 100')
+       if isinstance(user_id, int):
+            user = User.query.filter_by(id=user_id).first()
+        
+            enrollment = Enrollement.query.filter_by(student_id=student_id.upper(), course_code=course_code.upper()).first()
+            
+            score = data['score']
 
-       if user:
-               
-            if enrollment:
+            if 0 > score > 100:
+                abort(401, message = 'The score can only be from 0 to 100')
 
-                enrollment.gradeStudent(score)
-                # enrollment.score = data['score']
-                # db.session.commit()
+            if user:
+                    
+                    if enrollment:
 
-                return enrollment, HTTPStatus.OK
+                        enrollment.gradeStudent(score)
+                        # enrollment.score = data['score']
+                        # db.session.commit()
+
+                        return enrollment, HTTPStatus.OK
+                    else:
+                        abort(404, message='Student is not enrolled for this course')
             else:
-                abort(404, message='Student is not enrolled for this course')
+                abort(401, message='Only admins or users can add scores to student course. Login as admin or user to perform this action')
        else:
            abort(401, message='Only admins or users can add scores to student course. Login as admin or user to perform this action')
-           
+             
 
     # @jwt_required()
     # @blp.arguments(enrollmentSchema)
@@ -213,30 +225,34 @@ class updateDeleteStudentCourse(MethodView):
        Delete or unregister course enrollment for student
        """
        user_id = get_jwt_identity()
-       user = User.query.filter_by(id=user_id).first()
-       
-       if user and user.is_admin == True:
-           
-           enrollment = Enrollement.query.filter_by(student_id=student_id.upper(), course_code=course_code.upper()).first()
 
-           if enrollment:
-               student = Student.query.filter_by(student_id=student_id.upper()).first()
-               
-               db.session.delete(enrollment)
+       if isinstance(user_id, int):
+            user = User.query.filter_by(id=user_id).first()
+            
+            if user and user.is_admin == True:
+                
+                enrollment = Enrollement.query.filter_by(student_id=student_id.upper(), course_code=course_code.upper()).first()
 
-               for course in student.courses:
-                   if course.course_code == course_code.upper():
-                       student.courses.remove(course)
-                       break
+                if enrollment:
+                    student = Student.query.filter_by(student_id=student_id.upper()).first()
+                    
+                    db.session.delete(enrollment)
 
-               db.session.commit()
+                    for course in student.courses:
+                        if course.course_code == course_code.upper():
+                            student.courses.remove(course)
+                            break
 
-               return {
-                   'message': f'You have successfully unregistered student {student_id.upper()} from the course {course_code.upper()}'
-               }, HTTPStatus.OK
-           else:
-               abort(404, message=f'Student with ID {student_id.upper()} is not enrolled under the course {course_code.upper()}')
+                    db.session.commit()
 
+                    return {
+                        'message': f'You have successfully unregistered student {student_id.upper()} from the course {course_code.upper()}'
+                    }, HTTPStatus.OK
+                else:
+                    abort(404, message=f'Student with ID {student_id.upper()} is not enrolled under the course {course_code.upper()}')
+
+            else:
+                abort(401, message='Only admins can unregister students from a course. Login as admin to perform this action') 
        else:
            abort(401, message='Only admins can unregister students from a course. Login as admin to perform this action') 
 
@@ -263,13 +279,17 @@ class getGrades(MethodView):
         """
 
         user_id = get_jwt_identity()
-        user = User.query.filter_by(id=user_id).first()
 
-        if student_id.upper() == user_id or user:
+        if isinstance(user_id, int):
+            user = User.query.filter_by(id=user_id).first()
 
-            enrollment = Enrollement.query.filter_by(student_id=student_id.upper()).all()
+            if student_id.upper() == user_id or user:
 
-            return enrollment, 200
+                enrollment = Enrollement.query.filter_by(student_id=student_id.upper()).all()
+
+                return enrollment, 200
+            else:
+                abort(401, message='You cannot view the grades of other students. Login as admin or user to view other students grade')
         else:
             abort(401, message='You cannot view the grades of other students. Login as admin or user to view other students grade')
     
@@ -284,28 +304,32 @@ class getGrades(MethodView):
         Get the Grade Point Average (GPA) of all students
         """
         user_id = get_jwt_identity()
-        user = User.query.filter_by(id=user_id).first()
-        
-        if user:
-            students = Student.query.all()
+        all_gpa = []
+
+        if isinstance(user_id, int):
+            user = User.query.filter_by(id=user_id).first()
             
-            all_gpa = []
+            if user:
+                students = Student.query.all()
+                
+                for student in students:
+                    raw_gpa = Enrollement.calculateGpa(student.student_id)
+                    gpa = '%.2f' %raw_gpa   # convert gpa to two decimal places
 
-            for student in students:
-                raw_gpa = Enrollement.calculateGpa(student.student_id)
-                gpa = '%.2f' %raw_gpa   # convert gpa to two decimal places
+                    result = {
+                    'student_id': student.student_id,
+                    'student_name': f'{student.firstname} {student.lastname}',
+                    'gpa': gpa
+                }
 
-                result = {
-                'student_id': student.student_id,
-                'student_name': f'{student.firstname} {student.lastname}',
-                'gpa': gpa
-            }
+                    all_gpa.append(result)
 
-                all_gpa.append(result)
-
-            return all_gpa, 200
-        
-        abort(401, message='Only admins or users can view grades of all student. Login in as admin or user to perform this action')
+                return all_gpa, 200
+            
+            else:
+                abort(401, message='Only admins or users can view grades of all student. Login in as admin or user to perform this action')
+        else:
+            abort(401, message='Only admins or users can view grades of all student. Login in as admin or user to perform this action')
 
 
 @blp.route('/student/enrollment/gpa/<string:student_id>')
@@ -328,26 +352,30 @@ class getGrades(MethodView):
         Get the Grade Point Average (GPA) of a particular student
         """
         user_id = get_jwt_identity()
-        user = User.query.filter_by(id=user_id).first()
+
+        if isinstance(user_id, int):
+            user = User.query.filter_by(id=user_id).first()
 
 
-        if student_id.upper() == user_id or user:
-            student = Student.query.filter_by(student_id=student_id.upper()).first()
-            
-            if student:
-                raw_gpa = Enrollement.calculateGpa(student_id.upper())
+            if student_id.upper() == user_id or user:
+                student = Student.query.filter_by(student_id=student_id.upper()).first()
+                
+                if student:
+                    raw_gpa = Enrollement.calculateGpa(student_id.upper())
 
-                gpa = '%.2f' %raw_gpa   # convert gpa to two decimal places
+                    gpa = '%.2f' %raw_gpa   # convert gpa to two decimal places
 
-                return {
-                    'student_id': student.student_id,
-                    'student_name': f'{student.firstname} {student.lastname}',
-                    'gpa': gpa
-                }, 200
-            
-            abort(404, message='Student not found')
+                    return {
+                        'student_id': student.student_id,
+                        'student_name': f'{student.firstname} {student.lastname}',
+                        'gpa': gpa
+                    }, 200
+                else:
+                    abort(404, message='Student not found')
+            else:
+                abort(401, message='You cannot view other students info. Login as admin or user to perform this action')
         else:
-           abort(401, message='You cannot view other students info. Login as admin or user to perform this action') 
+            abort(401, message='You cannot view other students info. Login as admin or user to perform this action') 
        
             
 
@@ -372,15 +400,20 @@ class GetUpdateDeleteStudent(MethodView):
         Get a student by ID
         """
         user_id = get_jwt_identity()
-        user = User.query.filter_by(id=user_id).first()
 
-        if student_id.upper() == user_id or user:
-            student = Student.query.filter_by(student_id=student_id.upper()).first()
+        if isinstance(user_id, int):
+            user = User.query.filter_by(id=user_id).first()
 
-            return student, HTTPStatus.OK
+            if student_id.upper() == user_id or user:
+                student = Student.query.filter_by(student_id=student_id.upper()).first()
+
+                return student, HTTPStatus.OK
+            else:
+                abort(401, message='You cannot view other students info. Login as admin or user to perform this action')
         else:
-           abort(401, message='You cannot view other students info. Login as admin or user to perform this action') 
+            abort(401, message='You cannot view other students info. Login as admin or user to perform this action') 
        
+
     @jwt_required()
     @blp.doc(
             description="Update a student's information. Only admins can update a student's info",
@@ -400,29 +433,33 @@ class GetUpdateDeleteStudent(MethodView):
         Update a student's information
         """
         user_id = get_jwt_identity()
-        user = User.query.filter_by(id=user_id).first()
 
-        if user and user.is_admin == True:
-            student = Student.query.filter_by(student_id=student_id.upper()).first()
+        if isinstance(user_id, int):
+            user = User.query.filter_by(id=user_id).first()
 
-            if student:
-                email = student_data['email']
+            if user and user.is_admin == True:
+                student = Student.query.filter_by(student_id=student_id.upper()).first()
+
+                if student:
+                    email = student_data['email']
+                    
+                    try:
+                        student.firstname = student_data['firstname']
+                        student.lastname = student_data['lastname']
+                        student.email = student_data['email']
+
+                        db.session.commit()
+                    except IntegrityError:
+                        abort(400, message= f'A student with the email {email} already exit')
                 
-                try:
-                    student.firstname = student_data['firstname']
-                    student.lastname = student_data['lastname']
-                    student.email = student_data['email']
+                    except SQLAlchemyError:
+                        abort(500, message = 'An error occured whiles updating student')
 
-                    db.session.commit()
-                except IntegrityError:
-                    abort(400, message= f'A student with the email {email} already exit')
-            
-                except SQLAlchemyError:
-                    abort(500, message = 'An error occured whiles updating student')
-
-                return student, HTTPStatus.CREATED
+                    return student, HTTPStatus.CREATED
+                else:
+                    abort(404, message='Student not found')
             else:
-                abort(404, message='Student not found')
+                abort(HTTPStatus.UNAUTHORIZED, message='Only administrators can update students info. Login as admin to perform this action')
         else:
             abort(HTTPStatus.UNAUTHORIZED, message='Only administrators can update students info. Login as admin to perform this action')
     
@@ -444,22 +481,26 @@ class GetUpdateDeleteStudent(MethodView):
         Delete a student from database by ID
         """
         user_id = get_jwt_identity()
-        user = User.query.filter_by(id=user_id).first()
-        
 
-        if user and user.is_admin == True:
-            student = Student.query.filter_by(student_id=student_id.upper()).first()
-            if student:
-                try:
-                    db.session.delete(student)
-                    db.session.commit()
+        if isinstance(user_id, int):
+            user = User.query.filter_by(id=user_id).first()
+            
 
-                    return {'message': 'Student successfully deleted'}, HTTPStatus.OK
-                except SQLAlchemyError:
-                    abort(HTTPStatus.INTERNAL_SERVER_ERROR, message='Student is already enrolled to a course')
+            if user and user.is_admin == True:
+                student = Student.query.filter_by(student_id=student_id.upper()).first()
+                if student:
+                    try:
+                        db.session.delete(student)
+                        db.session.commit()
+
+                        return {'message': 'Student successfully deleted'}, HTTPStatus.OK
+                    except SQLAlchemyError:
+                        abort(HTTPStatus.INTERNAL_SERVER_ERROR, message='Student is already enrolled to a course')
+                else:
+                    abort(404, message='Student not found')
+
             else:
-                abort(404, message='Student not found')
-
+                abort(HTTPStatus.UNAUTHORIZED, message='Only administrators can delete students. Login as admin to perform this action')
         else:
             abort(HTTPStatus.UNAUTHORIZED, message='Only administrators can delete students. Login as admin to perform this action')
 
