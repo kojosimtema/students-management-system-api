@@ -59,7 +59,7 @@ class getCreateCourse(MethodView):
                     )
                 
                 try:
-                    new_course.save()
+                    db.session.add(new_course)
                 
                 except IntegrityError:
                     db.session.rollback()
@@ -68,7 +68,8 @@ class getCreateCourse(MethodView):
                 except SQLAlchemyError:
                     db.session.rollback()
                     abort(HTTPStatus.INTERNAL_SERVER_ERROR, message= 'An error occured whiles adding new course')
-
+                
+                db.session.commit()
                 return new_course, HTTPStatus.CREATED
             
             else:

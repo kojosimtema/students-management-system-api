@@ -407,7 +407,10 @@ class GetUpdateDeleteStudent(MethodView):
         if student_id.upper() == user_id or user:
             student = Student.query.filter_by(student_id=student_id.upper()).first()
 
-            return student, HTTPStatus.OK
+            if student:
+                return student, HTTPStatus.OK
+            else:
+                abort(404, message='Student not found')
         else:
             abort(401, message='You cannot view other students info. Login as admin or user to perform this action')
        

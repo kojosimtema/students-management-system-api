@@ -43,7 +43,7 @@ class createUser(MethodView):
 
                 try:
                     db.session.add(new_user)
-                    db.session.commit()
+                    # db.session.commit()
                 
                 except IntegrityError:
                     db.session.rollback()
@@ -53,6 +53,7 @@ class createUser(MethodView):
                     db.session.rollback()
                     abort(500, message = 'An error occured whiles adding user')
 
+                db.session.commit()
                 return new_user, 201
             else:
                 abort(401, message='Only administrators can add a user. Login as admin to add user')
@@ -119,13 +120,13 @@ class createStudent(MethodView):
 
                 try:
                     db.session.add(new_student)
-                    db.session.commit()
+                    # db.session.commit()
 
                     #Generate a student ID for student
                     student_id = 'ATS'+ str(0)*(5-(len(str(new_student.id)))) + str(new_student.id)
                     new_student.student_id = student_id
                     
-                    db.session.commit()
+                    # db.session.commit()
                 
                 except IntegrityError:
                     db.session.rollback()
@@ -135,6 +136,7 @@ class createStudent(MethodView):
                     db.session.rollback()
                     abort(500, message = 'An error occured whiles adding student')
 
+                db.session.commit()
                 return {
                     'message': 'New student successfully created. Use the credentials below to login as a student',
                     'student_id': student_id,
