@@ -435,7 +435,7 @@ class GetUpdateDeleteStudent(MethodView):
         if isinstance(user_id, int):
             user = User.query.filter_by(id=user_id).first()
 
-            if user and user.is_admin == True:
+            if user:
                 student = Student.query.filter_by(student_id=student_id.upper()).first()
 
                 if student:

@@ -46,9 +46,11 @@ class createUser(MethodView):
                     db.session.commit()
                 
                 except IntegrityError:
+                    db.session.rollback()
                     abort(400, message= f'A user with the email {email} or username {username} already exit')
                 
                 except SQLAlchemyError:
+                    db.session.rollback()
                     abort(500, message = 'An error occured whiles adding user')
 
                 return new_user, 201
@@ -126,9 +128,11 @@ class createStudent(MethodView):
                     db.session.commit()
                 
                 except IntegrityError:
+                    db.session.rollback()
                     abort(400, message= f'A student with the email {email} already exit')
                 
                 except SQLAlchemyError:
+                    db.session.rollback()
                     abort(500, message = 'An error occured whiles adding student')
 
                 return {

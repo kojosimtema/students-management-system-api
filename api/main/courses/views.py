@@ -51,7 +51,7 @@ class getCreateCourse(MethodView):
             if len(course_code) > 7:
                 abort(500, message='Your course code should not be more than seven (7) characters')
 
-            if user and user.is_admin == True:
+            if user:
                 new_course = Course(
                     course_code = course_data['course_code'].upper(),
                     name = course_data['name'],
@@ -62,9 +62,11 @@ class getCreateCourse(MethodView):
                     new_course.save()
                 
                 except IntegrityError:
+                    db.session.rollback()
                     abort(HTTPStatus.BAD_REQUEST, message= f'A course with name {course_name} or code {course_code.upper()} already exit')
 
                 except SQLAlchemyError:
+                    db.session.rollback()
                     abort(HTTPStatus.INTERNAL_SERVER_ERROR, message= 'An error occured whiles adding new course')
 
                 return new_course, HTTPStatus.CREATED
@@ -136,7 +138,7 @@ class getCourseByCode(MethodView):
         if isinstance(user_id, int):
             user = User.query.filter_by(id=user_id).first()
 
-            if user and user.is_admin == True:
+            if user:
                 course_update = Course.query.filter_by(course_code=course_code.upper()).first()
                 if course_update:
                     course_name = data['name']
