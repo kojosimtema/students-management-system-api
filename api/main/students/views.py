@@ -77,6 +77,7 @@ class courseEnrollment(MethodView):
         else:
             abort(HTTPStatus.UNAUTHORIZED, message='Only registered students can enroll for a coure. Login as a student to perform this action')
     
+
 @blp.route('/student/enrollment/<string:student_id>')
 class getAllStudentCourse(MethodView):
     
@@ -102,18 +103,16 @@ class getAllStudentCourse(MethodView):
        if isinstance(user_id, int):
             user = User.query.filter_by(id=user_id).first()
             
-            if user or student_id.upper() == user_id:
-                student = Student.query.filter_by(student_id=student_id.upper()).first()
-                if student:
-                    course = student.courses
-                    return course, HTTPStatus.OK
-                else:
-                    abort(404, message="Student not found")
+       if user or student_id.upper() == user_id:
+            student = Student.query.filter_by(student_id=student_id.upper()).first()
+            if student:
+                course = student.courses
+                return course, HTTPStatus.OK
             else:
-                abort(401, message='You cannot view course of other students. Login as admin or user to view other student course')
+                abort(404, message="Student not found")
        else:
-           abort(401, message='You cannot view course of other students. Login as admin or user to view other student course') 
-    
+           abort(401, message='You cannot view course of other students. Login as admin or user to view other student course')
+       
 
 @blp.route('/student/enrollment/<string:student_id>/<string:course_code>')
 class updateDeleteStudentCourse(MethodView):
@@ -283,16 +282,15 @@ class getGrades(MethodView):
         if isinstance(user_id, int):
             user = User.query.filter_by(id=user_id).first()
 
-            if student_id.upper() == user_id or user:
+        if student_id.upper() == user_id or user:
 
-                enrollment = Enrollement.query.filter_by(student_id=student_id.upper()).all()
+            enrollment = Enrollement.query.filter_by(student_id=student_id.upper()).all()
 
-                return enrollment, 200
-            else:
-                abort(401, message='You cannot view the grades of other students. Login as admin or user to view other students grade')
+            return enrollment, 200
         else:
             abort(401, message='You cannot view the grades of other students. Login as admin or user to view other students grade')
-    
+        
+
     
 @blp.route('/student/enrollment/gpa')
 class getGrades(MethodView):
@@ -357,26 +355,24 @@ class getGrades(MethodView):
             user = User.query.filter_by(id=user_id).first()
 
 
-            if student_id.upper() == user_id or user:
-                student = Student.query.filter_by(student_id=student_id.upper()).first()
+        if student_id.upper() == user_id or user:
+            student = Student.query.filter_by(student_id=student_id.upper()).first()
                 
-                if student:
-                    raw_gpa = Enrollement.calculateGpa(student_id.upper())
+            if student:
+                raw_gpa = Enrollement.calculateGpa(student_id.upper())
 
-                    gpa = '%.2f' %raw_gpa   # convert gpa to two decimal places
+                gpa = '%.2f' %raw_gpa   # convert gpa to two decimal places
 
-                    return {
-                        'student_id': student.student_id,
-                        'student_name': f'{student.firstname} {student.lastname}',
-                        'gpa': gpa
-                    }, 200
-                else:
-                    abort(404, message='Student not found')
+                return {
+                    'student_id': student.student_id,
+                    'student_name': f'{student.firstname} {student.lastname}',
+                    'gpa': gpa
+                }, 200
             else:
-                abort(401, message='You cannot view other students info. Login as admin or user to perform this action')
+                abort(404, message='Student not found')
         else:
-            abort(401, message='You cannot view other students info. Login as admin or user to perform this action') 
-       
+            abort(401, message='You cannot view other students info. Login as admin or user to perform this action')
+        
             
 
 @blp.route('/student/<string:student_id>')
@@ -404,14 +400,12 @@ class GetUpdateDeleteStudent(MethodView):
         if isinstance(user_id, int):
             user = User.query.filter_by(id=user_id).first()
 
-            if student_id.upper() == user_id or user:
-                student = Student.query.filter_by(student_id=student_id.upper()).first()
+        if student_id.upper() == user_id or user:
+            student = Student.query.filter_by(student_id=student_id.upper()).first()
 
-                return student, HTTPStatus.OK
-            else:
-                abort(401, message='You cannot view other students info. Login as admin or user to perform this action')
+            return student, HTTPStatus.OK
         else:
-            abort(401, message='You cannot view other students info. Login as admin or user to perform this action') 
+            abort(401, message='You cannot view other students info. Login as admin or user to perform this action')
        
 
     @jwt_required()
