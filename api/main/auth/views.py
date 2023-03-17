@@ -244,8 +244,12 @@ class changePassword(MethodView):
         Change password
         """
         user_id = get_jwt_identity()
-        user = User.query.filter_by(id=user_id).first()
-        student = Student.query.filter_by(student_id=user_id).first()
+        
+        if isinstance(user_id, int):
+            user = User.query.filter_by(id=user_id).first()
+
+        if isinstance(user_id, str):
+            student = Student.query.filter_by(student_id=user_id).first()
 
         response = {'message': 'Password successfuly changed'}
 
