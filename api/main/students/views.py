@@ -99,7 +99,7 @@ class getAllStudentCourse(MethodView):
        Get all courses of a particular student
        """
        user_id = get_jwt_identity()
-       user
+       user = {}
 
        if isinstance(user_id, int):
             user = User.query.filter_by(id=user_id).first()
@@ -279,7 +279,7 @@ class getGrades(MethodView):
         """
 
         user_id = get_jwt_identity()
-        user
+        user = {}
 
         if isinstance(user_id, int):
             user = User.query.filter_by(id=user_id).first()
@@ -352,7 +352,7 @@ class getGrades(MethodView):
         Get the Grade Point Average (GPA) of a particular student
         """
         user_id = get_jwt_identity()
-        user
+        user = {}
 
         if isinstance(user_id, int):
             user = User.query.filter_by(id=user_id).first()
@@ -399,7 +399,7 @@ class GetUpdateDeleteStudent(MethodView):
         Get a student by ID
         """
         user_id = get_jwt_identity()
-        user
+        user = {}
 
         if isinstance(user_id, int):
             user = User.query.filter_by(id=user_id).first()
