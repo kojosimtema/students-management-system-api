@@ -18,10 +18,10 @@ GRADES_PATTERN = {
 class Enrollement(db.Model):
     __tablename__ = 'enrollments'
 
-    id = db.Column(db.Integer, primary_key=True)
-    student_id = db.Column(db.Integer, db.ForeignKey('students.student_id'), nullable=False)
+    id = db.Column(db.Integer(), primary_key=True)
+    student_id = db.Column(db.String(), db.ForeignKey('students.student_id'), nullable=False)
     course_code = db.Column(db.String(10), db.ForeignKey('courses.course_code'), nullable=False)
-    score = db.Column(db.Integer, default=0, nullable=False)
+    score = db.Column(db.Integer(), default=0, nullable=False)
     grade = db.Column(db.String(2), default='F')
     grade_point = db.Column(db.Float(2), default=0)
     course = db.relationship('Course', backref='enrollment') 
