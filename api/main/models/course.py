@@ -7,7 +7,7 @@ class Course(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
     teacher = db.Column(db.String(120), nullable=False)
-    course_code = db.Column(db.String(10), nullable=False)
+    course_code = db.Column(db.String(10), nullable=False, unique=True)
     students = db.relationship('Student', secondary='enrollments')
 
 
