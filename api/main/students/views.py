@@ -47,28 +47,31 @@ class courseEnrollment(MethodView):
         """
         
         student_id = get_jwt_identity()
-        student = Student.query.filter_by(student_id=student_id).first()
-        course_available = Course.query.filter_by(course_code=data['course_code'].upper()).first()
-        enrolled = Enrollement.query.filter_by(student_id=student_id, course_code=data['course_code'].upper()).first()
 
-        if enrolled:
-            abort(401, message="You have already enrolled for this course")
-        if student:
-            if course_available:
+        if isinstance(student_id, str):
+            student = Student.query.filter_by(student_id=student_id).first()
+            course_available = Course.query.filter_by(course_code=data['course_code'].upper()).first()
+            enrolled = Enrollement.query.filter_by(student_id=student_id, course_code=data['course_code'].upper()).first()
 
-                enrollment = Enrollement(course_code=data['course_code'].upper())
-                enrollment.student_id = student_id
-                    
+            if enrolled:
+                abort(401, message="You have already enrolled for this course")
+            if student:
+                if course_available:
 
-                db.session.add(enrollment)
-                db.session.commit()
+                    enrollment = Enrollement(course_code=data['course_code'].upper())
+                    enrollment.student_id = student_id
+                        
 
-                return student, HTTPStatus.CREATED
+                    db.session.add(enrollment)
+                    db.session.commit()
+
+                    return student, HTTPStatus.CREATED
+                else:
+                    abort(HTTPStatus.NOT_FOUND, message='This course is not availabe. Check your course code again to register')
             else:
-                abort(HTTPStatus.NOT_FOUND, message='This course is not availabe. Check your course code again to register')
+                abort(HTTPStatus.UNAUTHORIZED, message='Only registered students can enroll for a coure. Login as a student to perform this action')
         else:
             abort(HTTPStatus.UNAUTHORIZED, message='Only registered students can enroll for a coure. Login as a student to perform this action')
-
     
 @blp.route('/student/enrollment/<string:student_id>')
 class getAllStudentCourse(MethodView):
