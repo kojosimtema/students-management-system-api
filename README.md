@@ -161,7 +161,9 @@ GET|/course|Retrieve or get all courses|Courses|None|Adminstrator, User, Student
 POST|/course|Add a new course|Course|None|Adminstrator, User
 GET|/course/{course_code}|Retrieve or get a course by course code|Course|Course code|Adminstrator, User
 PUT|/course/{course_code}|Update or edit a course|Course|Course code|Adminstrator, User
-DELETE|/course/{course_code}|Delete a course from database|Success message|Course_code|Adminstrator
+DELETE|/course/{course_code}|Delete a course from database|Success message|Course code|Adminstrator
+GET|/course/enrollment/{course_code}|Get or retrieve all students registered in a particular course|Students|Course code|Adminstrator, User
+GET|/course/enrollment/grade/{course_code}|Get or retrieve grades of all students for a particular course|Enrollments|Course code|Adminstrator, User
 
 
 ___
