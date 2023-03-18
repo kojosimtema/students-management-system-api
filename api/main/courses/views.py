@@ -33,7 +33,7 @@ class getCreateCourse(MethodView):
         
     
     @jwt_required()
-    @blp.doc(descripton = 'Add a new course. Only admins can add a new course')
+    @blp.doc(descripton = 'Add a new course. Only admins and users can add a new course')
     @blp.arguments(plainCourseSchema)
     @blp.response(HTTPStatus.CREATED, plainCourseSchema)
     def post(self, course_data):
@@ -122,7 +122,7 @@ class getCourseByCode(MethodView):
     
     @jwt_required()
     @blp.doc(
-        description = 'Update or edit a course by its code. Only admins can perform this action',
+        description = 'Update or edit a course by its code. Only admins and users can perform this action',
         parameters = [
             {
                 'name': 'course_code',

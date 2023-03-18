@@ -417,7 +417,7 @@ class GetUpdateDeleteStudent(MethodView):
 
     @jwt_required()
     @blp.doc(
-            description="Update a student's information. Only admins can update a student's info",
+            description="Update a student's information. Only admins and users can update a student's info",
             parameters=[
             {
                 'name': 'student_id', 
