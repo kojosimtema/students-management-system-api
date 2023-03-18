@@ -60,7 +60,7 @@ pip install -r requirements.txt
 
 
 ## Usage
-**Before you run the application, do the following:**
+**Before you run the application locally, do the following:**
 
 **1. In the run.py file remove the *"config=config_dict['prod']"* argument from the create_app function as below to run in development mode**
 ```
@@ -138,6 +138,8 @@ Once the application is running, you can start testing it with the following adm
 You can visit the app [here](https://students-management-system-api.herokuapp.com/) as well to test the already hosted application with the same credentials provided above.
 
 ## ENDPOINTS
+### Auth Enpoints
+
 HTTP METHOD|ENDPOINT|ACTION|RETURN VALUE|PARAMETER|AUTHORIZATION
 ---|---|---|---|---|---
 POST|/auth/user/signup|Create a new User|User|None|Administrator
@@ -146,6 +148,11 @@ POST|/auth/student/register|Register a new student|Student ID & password|None|Ad
 POST|/auth/student/login|Generate a Access token for student|Access Token & Refresh Token|None|Student
 POST|/auth/resetpassword/{email}|Reset a forgotten password|Username and new password; Student ID and new password|User email or Student email|User, Student
 PUT|/auth/changepassword|Change a password|Success message|None|User, Student
+
+### Student Enpoints
+
+HTTP METHOD|ENDPOINT|ACTION|RETURN VALUE|PARAMETER|AUTHORIZATION
+---|---|---|---|---|---
 GET|/student|Retrieve or get all students|Students|None|Adminstrator, User
 POST|/student/enrollment|Enroll for a course|Student with courses enrolled for|None|Student
 GET|/student/enrollment/{student_id}|Retrieve or get all courses of a particular student|Course|Student email|Adminstrator, User, Student
@@ -157,6 +164,11 @@ GET|/student/enrollment/gpa/{student_id}|Retrive or get the GPA of a particular 
 GET|/student/{student_id}|Retrive or get a student by ID|Student|Student ID|Adminstrator, User, Student
 PUT|/student/{student_id}|Update a student's information|Student|Student ID|Adminstrator, User
 DELETE|/student/{student_id}|Delete a student from the database|Success Message|Student ID|Adminstrator
+
+### Course Enpoints
+
+HTTP METHOD|ENDPOINT|ACTION|RETURN VALUE|PARAMETER|AUTHORIZATION
+---|---|---|---|---|---
 GET|/course|Retrieve or get all courses|Courses|None|Adminstrator, User, Student
 POST|/course|Add a new course|Course|None|Adminstrator, User
 GET|/course/{course_code}|Retrieve or get a course by course code|Course|Course code|Adminstrator, User
