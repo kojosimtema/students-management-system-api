@@ -180,7 +180,30 @@ ___
 - Flask Smoorest
 - PostgreSQL
 
-## Acknowledgement
-I wish to acknowledge [AltSchool Africa](https://altschoolafrica.com/schools/engineering) for thier innovation and investments in training us.
+## Screenshots
 
-I also wish to acknowledge [Caleb](https://github.com/CalebEmelike) for being an exceptional tutor
+### *Swagger UI for API*
+
+![image](https://user-images.githubusercontent.com/53656050/226096416-3c51f81e-e33c-4b81-90ac-a70cfdf45fd8.png)
+
+### *Endpoints for Authentication*
+
+![image](https://user-images.githubusercontent.com/53656050/226096896-6cfbe106-c0d5-47c4-8036-1734a2643cb6.png)
+
+### *Endpoints for Student*
+
+![image](https://user-images.githubusercontent.com/53656050/226096791-43e5f608-a59b-41ef-a721-6f2549bb7913.png)
+
+### *Endpoints for Course*
+
+![image](https://user-images.githubusercontent.com/53656050/226096635-6cc1c89f-7c07-4437-9f95-933e6b552d81.png)
+
+### *API Schemas*
+
+![image](https://user-images.githubusercontent.com/53656050/226096766-73e5bbbd-1bc8-41e2-b478-9afe2c747e0d.png)
+
+
+## Acknowledgements
+- [AltSchool Africa](https://altschoolafrica.com/schools/engineering)
+
+- [Caleb Emelike](https://github.com/CalebEmelike)
