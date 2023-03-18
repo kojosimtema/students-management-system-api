@@ -130,7 +130,7 @@ class createStudent(MethodView):
 
                     try:
                         db.session.add(new_student)
-                        # db.session.commit()
+                        db.session.commit()
 
                         #Generate a student ID for student
                         student_id = 'ATS'+ str(0)*(5-(len(str(new_student.id)))) + str(new_student.id)
