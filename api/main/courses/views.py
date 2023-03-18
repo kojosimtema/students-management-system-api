@@ -33,7 +33,7 @@ class getCreateCourse(MethodView):
         
     
     @jwt_required()
-    @blp.doc(descripton = 'Add a new course. Only admins and users can add a new course')
+    @blp.doc(description = 'Add a new course. Only admins and users can add a new course')
     @blp.arguments(plainCourseSchema)
     @blp.response(HTTPStatus.CREATED, plainCourseSchema)
     def post(self, course_data):
