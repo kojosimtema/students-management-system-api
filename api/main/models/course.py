@@ -14,6 +14,6 @@ class Course(db.Model):
     def __repr__(self):
         return f'<Course_Name: {self.name}>'
     
-    # def save(self):
-    #     db.session.add(self)
-    #     db.session.commit()
+    def save(self):
+        db.session.add(self)
+        db.session.commit()

@@ -52,26 +52,30 @@ class getCreateCourse(MethodView):
                 abort(500, message='Your course code should not be more than seven (7) characters')
 
             if user:
-                new_course = Course(
+                code_exit = Course.query.filter_by(course_code=course_code.upper()).first()
+                name_exit = Course.query.filter_by(name=course_name).first()
+                
+                if code_exit or name_exit:
+                    abort(HTTPStatus.BAD_REQUEST, message= f'A course with name {course_name} or code {course_code.upper()} already exit')
+                
+                else:
+                    new_course = Course(
                     course_code = course_data['course_code'].upper(),
                     name = course_data['name'],
                     teacher = course_data['teacher']
                     )
                 
-                try:
-                    db.session.add(new_course)
-                
-                except IntegrityError:
-                    db.session.rollback()
-                    abort(HTTPStatus.BAD_REQUEST, message= f'A course with name {course_name} or code {course_code.upper()} already exit')
+                    try:
+                        new_course.save()
+                    
+                    except IntegrityError:
+                        abort(HTTPStatus.BAD_REQUEST, message= f'A course with name {course_name} or code {course_code.upper()} already exit')
 
-                except SQLAlchemyError:
-                    db.session.rollback()
-                    abort(HTTPStatus.INTERNAL_SERVER_ERROR, message= 'An error occured whiles adding new course')
+                    except SQLAlchemyError:
+                        abort(HTTPStatus.INTERNAL_SERVER_ERROR, message= 'An error occured whiles adding new course')
+
+                    return new_course, HTTPStatus.CREATED
                 
-                db.session.commit()
-                return new_course, HTTPStatus.CREATED
-            
             else:
                 abort(401, message='Only administrators can add a course. Login as admin to perform this action')
         else:
@@ -139,7 +143,7 @@ class getCourseByCode(MethodView):
         if isinstance(user_id, int):
             user = User.query.filter_by(id=user_id).first()
 
-            if user:
+            if user and user.is_admin == True:
                 course_update = Course.query.filter_by(course_code=course_code.upper()).first()
                 if course_update:
                     course_name = data['name']

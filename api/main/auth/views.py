@@ -33,28 +33,32 @@ class createUser(MethodView):
                 email = user_data['email']
                 username = user_data['username']
 
-                new_user = User(
-                    fullname = user_data['fullname'],
-                    username = username,
-                    email = email,
-                    password = generate_password_hash(user_data['password']),
-                    is_admin = user_data['is_admin']
-                )
+                email_exit = User.query.filter_by(email=email).first()
+                username_exit = User.query.filter_by(username=username).first()
 
-                try:
-                    db.session.add(new_user)
-                    # db.session.commit()
-                
-                except IntegrityError:
-                    db.session.rollback()
+                if email_exit or username_exit:
                     abort(400, message= f'A user with the email {email} or username {username} already exit')
                 
-                except SQLAlchemyError:
-                    db.session.rollback()
-                    abort(500, message = 'An error occured whiles adding user')
+                else:
+                    new_user = User(
+                        fullname = user_data['fullname'],
+                        username = username,
+                        email = email,
+                        password = generate_password_hash(user_data['password']),
+                        is_admin = user_data['is_admin']
+                    )
 
-                db.session.commit()
-                return new_user, 201
+                    try:
+                        db.session.add(new_user)
+                        db.session.commit()
+                    
+                    except IntegrityError:
+                        abort(400, message= f'A user with the email {email} or username {username} already exit')
+                    
+                    except SQLAlchemyError:
+                        abort(500, message = 'An error occured whiles adding user')
+
+                    return new_user, 201
             else:
                 abort(401, message='Only administrators can add a user. Login as admin to add user')
         else:
@@ -107,41 +111,44 @@ class createStudent(MethodView):
             if user:
                 email = student_data['email']
 
-                #Generate a random password for student
-                characters = string.ascii_letters + string.digits
-                password = ''.join((random.choice(characters) for i in range(8)))
+                email_exit = Student.query.filter_by(email=email).first()
 
-                new_student = Student(
-                    firstname = student_data['firstname'],
-                    lastname = student_data['lastname'],
-                    email = email,
-                    password = generate_password_hash(password)
-                )
-
-                try:
-                    db.session.add(new_student)
-                    # db.session.commit()
-
-                    #Generate a student ID for student
-                    student_id = 'ATS'+ str(0)*(5-(len(str(new_student.id)))) + str(new_student.id)
-                    new_student.student_id = student_id
-                    
-                    # db.session.commit()
-                
-                except IntegrityError:
-                    db.session.rollback()
+                if email_exit:
                     abort(400, message= f'A student with the email {email} already exit')
-                
-                except SQLAlchemyError:
-                    db.session.rollback()
-                    abort(500, message = 'An error occured whiles adding student')
 
-                db.session.commit()
-                return {
-                    'message': 'New student successfully created. Use the credentials below to login as a student',
-                    'student_id': student_id,
-                    'password': password
-                }, 201
+                else:
+                    #Generate a random password for student
+                    characters = string.ascii_letters + string.digits
+                    password = ''.join((random.choice(characters) for i in range(8)))
+
+                    new_student = Student(
+                        firstname = student_data['firstname'],
+                        lastname = student_data['lastname'],
+                        email = email,
+                        password = generate_password_hash(password)
+                    )
+
+                    try:
+                        db.session.add(new_student)
+                        # db.session.commit()
+
+                        #Generate a student ID for student
+                        student_id = 'ATS'+ str(0)*(5-(len(str(new_student.id)))) + str(new_student.id)
+                        new_student.student_id = student_id
+                        
+                        db.session.commit()
+                    
+                    except IntegrityError:
+                        abort(400, message= f'A student with the email {email} already exit')
+                    
+                    except SQLAlchemyError:
+                        abort(500, message = 'An error occured whiles adding student')
+
+                    return {
+                        'message': 'New student successfully created. Use the credentials below to login as a student',
+                        'student_id': student_id,
+                        'password': password
+                    }, 201
             else:
                 abort(401, message='Only administrators and users can add a student. Login as admin or user to add student')
         else:
