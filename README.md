@@ -5,7 +5,12 @@
     - [How to run the app locally (Installation)](#how-to-run-the-app-locally)
     - [Usage](#usage)
  - [Endpoints](#endpoints)
+    - [Auth Enpoints](auth-enpoints)
+    - [Student Enpoints](student-enpoints)
+    - [Course Enpoints](course-enpoints)
  - [Languages and Tools Used](#languages-and-tools-used)
+ - [Screenshots](#screenshots)
+ - [Acknowledgements](#acknowledgements)
 
 
 ## About
@@ -149,6 +154,7 @@ POST|/auth/student/login|Generate a Access token for student|Access Token & Refr
 POST|/auth/resetpassword/{email}|Reset a forgotten password|Username and new password; Student ID and new password|User email or Student email|User, Student
 PUT|/auth/changepassword|Change a password|Success message|None|User, Student
 
+___
 ### Student Enpoints
 
 HTTP METHOD|ENDPOINT|ACTION|RETURN VALUE|PARAMETER|AUTHORIZATION
@@ -165,6 +171,7 @@ GET|/student/{student_id}|Retrive or get a student by ID|Student|Student ID|Admi
 PUT|/student/{student_id}|Update a student's information|Student|Student ID|Adminstrator, User
 DELETE|/student/{student_id}|Delete a student from the database|Success Message|Student ID|Adminstrator
 
+___
 ### Course Enpoints
 
 HTTP METHOD|ENDPOINT|ACTION|RETURN VALUE|PARAMETER|AUTHORIZATION
